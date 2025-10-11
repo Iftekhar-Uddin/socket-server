@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+enum UserRole {
+  Admin
+  User
+}
+
+model User {
+  id String @id @default(cuid())
+  name String?
+  email String? @unique
+  emailVerified DateTime?
+  password String? @db.Text // Store hashed password
+  image String?
+  role UserRole @default(User)
+  isTwoFactorEnabled Boolean @default(true)
+  twoFactorConfirmation TwoFactorConfirmation?
+  accounts Account[]
+  sessions Session[]
+  jobs Job[] @relation("PostedJobs")
+  applications Application[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String @id @default(cuid())
+  email      String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  identifier String @id @default(cuid())
+  email      String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  identifier String @id @default(cuid())
+  email      String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId])
+}
+
+model Job {
+  id String @id @default(cuid())
+  title String
+  company String
+  location String
+  type String
+  responsibilities String? @db.Text
+  salary String?
+  experience String?
+  vacancies Int?
+  skills String?
+  education String?
+  benefits String[] @db.Text
+  jobplace String?
+  lat Float?
+  lng Float?
+  postedAt DateTime @default(now())
+  deadline DateTime?
+  postedBy User @relation("PostedJobs", fields: [postedById], references: [id])
+  postedById String
+
+  applications Application[]
+  // locations Location[]
+}
+
+model Application {
+  id String @id @default(cuid())
+  jobId String
+  userId String
+  status String @default("PENDING") // REVIEWING, ACCEPTED, REJECTED
+  appliedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  job Job @relation(fields: [jobId], references: [id])
+
+  @@unique([jobId, userId])
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  receiverId String
+  senderId   String?       
+  title      String
+  body       String
+  data       Json?         
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([receiverId])
+}
+
+// model Location {
+//   id String @id @default(cuid())
+//   locationTitle String
+//   lat Float
+//   lng Float
+//   job Job @relation(fields: [jobId], references: [id])
+//   jobId String
+//   createdAt DateTime @default(now())
+// }
