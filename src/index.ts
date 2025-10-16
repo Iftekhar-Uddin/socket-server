@@ -28,7 +28,7 @@ async function start() {
 
   const server = createServer(app);
   const io = new IOServer(server, {
-    cors: { origin: ALLOWED_ORIGIN, methods: ["GET", "POST"], credentials: true },
+    cors: { origin: "https://my-job-application.vercel.app", methods: ["GET", "POST"], credentials: true },
     transports: ["websocket"],
     path: "/socket.io",
   });
