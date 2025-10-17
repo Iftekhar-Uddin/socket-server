@@ -14,8 +14,8 @@ const prisma = new PrismaClient();
 const PORT = Number(process.env.PORT || 4000);
 const AUTH_SECRET = process.env.AUTH_SECRET!;
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY!;
-const REDIS_URL = process.env.REDIS_URL || "";
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "";
+const REDIS_URL = process.env.REDIS_URL;
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN;
 
 if (!AUTH_SECRET || !INTERNAL_API_KEY) {
   console.error("Missing AUTH_SECRET or INTERNAL_API_KEY");
